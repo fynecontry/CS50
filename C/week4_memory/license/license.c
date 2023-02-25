@@ -31,9 +31,11 @@ int main(int argc, char *argv[])
         strcpy(plates[idx], buffer);
         idx++;
     }
+    fclose(infile);
 
     for (int i = 0; i < 8; i++)
     {
         printf("%s\n", plates[i]);
+        free(plates[i]);
     }
 }
