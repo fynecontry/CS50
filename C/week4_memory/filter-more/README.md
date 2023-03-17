@@ -20,8 +20,12 @@ where `IMAGE.bmp` is the name of an image file and `OUTFILE.bmp` is the name giv
 
 
 #### Example output:
+##### original image
+![image](https://user-images.githubusercontent.com/27024731/225846358-9923a15c-2d07-48d7-8deb-ca7860b4b44f.png)
 
-![original image](https://github.com/fynecontry/CS50/tree/main/C/week4_memory/filter-more/images/yard.bmp) ![altered image](https://github.com/fynecontry/CS50/tree/main/C/week4_memory/filter-more/images/out.bmp)
+##### altered image
+![image](https://user-images.githubusercontent.com/27024731/225846747-fc811513-32c5-400b-99c8-a893cff7bf1c.png)
+
 
 #### Memory utilisation:
 ```
