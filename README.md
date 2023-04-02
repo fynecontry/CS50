@@ -1,6 +1,6 @@
 # CS50
 
-[CS50](https://cs50.harvard.edu/x/2023/) is an on-campus and online introductory course on computer science taught at Harvard University and Yale University.
+[CS50](https://cs50.harvard.edu/x/2023/) is an on-campus and online course on computer science taught at Harvard University and Yale University.
 
 This course teaches on how to solve problems, both with and without code, with an emphasis:
 - Correctness
