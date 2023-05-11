@@ -1,5 +1,6 @@
 // Saves popular dog names in a trie
 // https://www.dailypaws.com/dogs-puppies/dog-names/common-dog-names
+#include <assert.h>
 
 #include <cs50.h>
 #include <ctype.h>
@@ -9,29 +10,38 @@
 #include <string.h>
 
 #define SIZE_OF_ALPHABET 26
-#define MAXCHAR 20
+// Protect from overflow -- make much larger.
+#define MAXCHAR 2048
 
-typedef struct node
+typedef struct node_s
 {
-    bool is_word;
-    struct node *children[SIZE_OF_ALPHABET];
-}
-node;
+    bool is_word; // terminal node
+    struct node_s *children[SIZE_OF_ALPHABET];
+} Node;
 
 // Function prototypes
 bool check(char *word);
 bool unload(void);
-void unloader(node *current);
+void unloader(Node *current);
 
 // Root of trie
-node *root;
+Node *root;
 
 // Buffer to read dog names into
 char name[MAXCHAR];
 
+Node *mknode()
+{
+    Node *n = malloc(sizeof(Node));
+    assert(n);
+    n->is_word = false;
+    for (int i = 0; i < sizeof(n->children) / sizeof(*n->children); i++)
+        n->children[i] = 0;
+    return n;
+}
 int main(int argc, char *argv[])
 {
-    // Check for command line args
+    //  Check for command line args
     if (argc != 2)
     {
         printf("Usage: ./trie infile\n");
@@ -47,48 +57,36 @@ int main(int argc, char *argv[])
     }
 
     // Allocate root of trie
-    root = malloc(sizeof(node));
+    root = mknode();
 
-    if (root == NULL)
+    // Add words to the trie -- careful, fscanf replaced with fgets is fragile ... https://stackoverflow.com/questions/861793/trouble-reading-a-line-using-fscanf
+    while (fgets(name, MAXCHAR, infile))
     {
-        return 1;
-    }
-
-    root->is_word = false;
-    for (int i = 0; i < SIZE_OF_ALPHABET; i++)
-    {
-        root->children[i] = NULL;
-    }
-
-    // Add words to the trie
-    while (fscanf(infile, "%s", name) == 1)
-    {
-        node *cursor = root;
-
+        // Remove newline character as a result of using fgets
+        size_t len = strlen(name);
+        if (len > 0 && name[len - 1] == '\n')
+        {
+            name[len - 1] = '\0';
+        }
+        Node *cursor = root;
+        //
         for (int i = 0, n = strlen(name); i < n; i++)
         {
             int index = tolower(name[i]) - 'a';
-            if (cursor->children[index] == NULL)
+            if (cursor->children[index] == 0)
             {
-
-                // Make node
-                node *new = malloc(sizeof(node));
-                new->is_word = false;
-                for (int j = 0; j < SIZE_OF_ALPHABET; j++)
-                {
-                    new->children[j] = NULL;
-                }
-                cursor->children[index] = new;
+                // Make Node
+                cursor->children[index] = mknode();
             }
 
-            // Go to node which we may have just been made
+            // Go to Node which we may have just been made
             cursor = cursor->children[index];
         }
 
         // if we are at the end of the word, mark it as being a word
         cursor->is_word = true;
     }
-
+    // change to take root as parameter of check -- no more globals
     if (check(get_string("Check word: ")))
     {
         printf("Found!\n");
@@ -105,26 +103,30 @@ int main(int argc, char *argv[])
     }
 
     fclose(infile);
+    return 0;
 }
 
-// TODO: Complete the check function, return true if found, false if not found
+
+// Complete the check function, return true if found, false if not found
 bool check(char *word)
 {
     // Set cursor to the root of the trie
-    node *cursor = root;
+    Node *cursor = root;
 
-    // Iterate over word to see if it occurs in trie by traversing every child node in trie
-    for (int i = 0, n = strlen(word); i < n; i++)
+    // Iterate over word to see if it occurs in trie by traversing every child Node in trie
+    // char * c = word;
+    for (char *c = word; *c && cursor; c++)
     {
-        int index = tolower(word[i]) - 'a';
+        int index = tolower(*c) - 'a';
         // Return false is letter from word doesn't exists.
-        if (cursor->children[index] == NULL)
+        if (!cursor->children[index])
         {
             return false;
         }
         cursor = cursor->children[index];
     }
-    return true;
+
+    return cursor && cursor->is_word;
 }
 
 // Unload trie from memory
@@ -137,20 +139,20 @@ bool unload(void)
     return true;
 }
 
-void unloader(node *current)
+void unloader(Node *current)
 {
 
     // Iterate over all the children to see if they point to anything and go
     // there if they do point
     for (int i = 0; i < SIZE_OF_ALPHABET; i++)
     {
-        if (current->children[i] != NULL)
+        if (current->children[i])
         {
             unloader(current->children[i]);
         }
     }
 
-    // After we check all the children point to null we can get rid of the node
+    // After we check all the children point to null we can get rid of the Node
     // and return to the previous iteration of this function.
     free(current);
 }
